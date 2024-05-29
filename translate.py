@@ -10,7 +10,7 @@ from libary import gen_vector, load_image, search_cv2, show_image
 class GraphLexer(object):
     tokens = (
         'NUMBER', 'VARIABLE', 'PLUS', 'MINUS', 'TIMES', 'DIV', 'EQUAL', 'EXP',
-        'LPAREN', 'RPAREN', 'COMMA', 'CONNECT', "STRING"
+        'LPAREN', 'RPAREN', 'COMMA', 'CONNECT', "STRING", 'NONE'
     )
 
     t_PLUS = r'\+'
@@ -23,6 +23,11 @@ class GraphLexer(object):
     t_RPAREN = r'\)'
     t_COMMA = r','
     t_CONNECT = r'->'
+
+    def t_NONE(self, t):
+        r'None'
+        t.value = None
+        return t
 
     def t_NUMBER(self, t):
         r'\d+\.?\d*'
@@ -91,7 +96,7 @@ class GraphParser(object):
         if node_type == "ASSIGN":
             self.symbol_table[res[0]] = res[1]
             return res[1]
-        if node_type == "NUMBER" or node_type == "STRING":
+        if node_type == "NUMBER" or node_type == "STRING" or node_type == "NONE":
             return node_value
         if node_type == "PENDING_NODE":
             return res[0]
@@ -106,6 +111,9 @@ class GraphParser(object):
             else:
                 print(f"Error: Undefined function '{node_value}'")
                 return None
+        # Check for None value before performing operation
+        if None in res:
+                raise TypeError(f"unsupported operand type(s) on 'NoneType' for {node_type} operation")
         if node_type == "POWER":
             return pow(res[0], res[1])
         if node_type == "PLUS":
@@ -118,7 +126,7 @@ class GraphParser(object):
             return res[0] / res[1]
         if node_type == "GROUP":
             return res[0]
-
+        
     def p_assignment_assign(self, p):
         """assignment : VARIABLE EQUAL expression"""
         node = self.add_node({"type": "ASSIGN", "label": '=', "value": ''})
@@ -197,6 +205,10 @@ class GraphParser(object):
         """string : STRING"""
         p[0] = self.add_node({"type": "STRING", "label": f'STR_{p[1]}', "value": p[1]})
 
+    def p_none_def(self, p):
+        """expression : NONE"""
+        p[0] = self.add_node({"type": "NONE", "label": 'none', "value": p[1]})
+
     def p_term_exponent(self, p):
         """term : exponent"""
         p[0] = p[1]
@@ -255,6 +267,7 @@ class GraphParser(object):
             self.parseGraph.add_edge(node["counter"], n["counter"])
         p[0] = node
 
+
     def p_params(self, p):
         """params : params COMMA expression 
                   | expression"""
@@ -278,12 +291,15 @@ class GraphParser(object):
             self.NODE_COUNTER = 0
             root = self.add_node({"type": "INITIAL", "label": "INIT"})
             result = self.parser.parse(data)
-            self.parseGraph.add_edge(root["counter"], result["counter"])
-            labels = nx.get_node_attributes(self.parseGraph, "label")
-            nx.draw(self.parseGraph, labels=labels, with_labels=True)
-            plt.show()
-            result = self.execute_parse_tree(self.parseGraph)
-            print("Result:", result)
+            if result:
+                self.parseGraph.add_edge(root["counter"], result["counter"])
+                labels = nx.get_node_attributes(self.parseGraph, "label")
+                nx.draw(self.parseGraph, labels=labels, with_labels=True)
+                plt.show()
+                result = self.execute_parse_tree(self.parseGraph)
+                print("Result:", result)
+            else:
+                print("Failed to parse input.")
 
 if __name__ == "__main__":
     parser = GraphParser()
