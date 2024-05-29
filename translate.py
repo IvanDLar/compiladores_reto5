@@ -3,6 +3,7 @@ import ply.yacc as yacc
 from math import pi, pow
 import networkx as nx
 import matplotlib.pyplot as plt
+import functions
 
 # Import custom libraries
 from libary import gen_vector, load_image, search_cv2, show_image
@@ -54,6 +55,7 @@ class GraphParser(object):
     tokens = GraphLexer.tokens
 
     def __init__(self):
+        self.command_queue = []
         self.lexer = GraphLexer()
         self.parseGraph = None
         self.NODE_COUNTER = 0
@@ -67,9 +69,16 @@ class GraphParser(object):
             "show": show_image,
             "gen_vector": lambda *args: gen_vector(*args),
             "PI": pi,
-            "E": 2.718281828459045
+            "E": 2.718281828459045,
+            "execute_file": self.execute_file
+, 
         }
         self.parser = yacc.yacc(module=self)
+
+    def execute_file(self, file_path):
+        commands = functions.get_file_lines(file_path)
+        for command in commands:
+            self.command_queue.append(command)
 
     def add_node(self, attr):
         attr.setdefault("value", "")  # Ensure that 'value' key is always present
@@ -281,7 +290,10 @@ class GraphParser(object):
 
     def main(self):
         while True:
-            data = input(">")
+            if len(self.command_queue) < 1:
+                new_data = input(">")
+                self.command_queue.append(new_data)
+            data = self.command_queue.pop(0)
             if data == 'exit':
                 break
             if data == 'st':
