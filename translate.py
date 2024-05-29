@@ -54,7 +54,8 @@ tokens = (
     'RPAREN',
     'COMMA',
     'CONNECT',
-    'STRING'
+    'STRING',
+    'NONE'
     )
 
 t_PLUS = r'\+'
@@ -67,6 +68,11 @@ t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_COMMA = r','
 t_CONNECT = r'->'
+
+def t_NONE(t):
+    r'None'
+    t.value = None
+    return t
 
 def t_STRING(t):
     r'\"(.)*\"'
@@ -94,8 +100,9 @@ lexer = lex.lex()
 def p_assignment_assign(p):
     """
     assignment : VARIABLE EQUAL expression
+                | VARIABLE EQUAL none_value
     """
-    node = add_node({"type": "ASSIGN", "label": f'=', "value": ''})
+    node = add_node({"type": "Ap_assignment_assignSSIGN", "label": f'=', "value": ''})
     node_var = add_node({"type": "VARIABLE_ASSIGN", "label": f'VAR_{p[1]}', "value": p[1]})
     
     parseGraph.add_edge(node["counter"], node_var["counter"])
@@ -287,6 +294,12 @@ def p_function_call_with_params(p):
         parseGraph.add_edge(node["counter"], n["counter"])
     p[0] = node
 
+def p_none_value(p):
+    """
+    none_value : NONE
+    """
+    p[0] = add_node({"type": "NONE", "label": 'None', "value": None})
+
 def p_params_multiple(p):
     """
     params : params COMMA expression
@@ -327,6 +340,9 @@ def visit_node(tree, node_id, from_id):
         return current_node["value"]
     
     if current_node["type"] == "STRING":
+        return current_node["value"]
+
+    if current_node["type"] == "NONE":
         return current_node["value"]
     
     if current_node["type"] == "PENDING_NODE":
