@@ -18,3 +18,6 @@ def search_cv2(fucntion_name):
     except:
         pass
     return None
+
+def gen_vector(*args):
+    return np.array(args)

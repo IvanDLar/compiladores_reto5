@@ -1,418 +1,290 @@
 import ply.lex as lex
 import ply.yacc as yacc
-
-from math import pi
-from math import pow
-from library import *
-
+from math import pi, pow
 import networkx as nx
 import matplotlib.pyplot as plt
 
-parseGraph = None
-NODE_COUNTER = 0
+# Import custom libraries
+from libary import gen_vector, load_image, search_cv2, show_image
 
-def add_node(attr):
-    global parseGraph
-    global NODE_COUNTER
-
-    attr["counter"] = NODE_COUNTER
-    parseGraph.add_node(NODE_COUNTER, **attr)
-    NODE_COUNTER += 1
-    return parseGraph.nodes[NODE_COUNTER-1]
-
-symbol_table = dict()
-
-symbol_table["PI"] = pi
-symbol_table["E"] = 2.718281828459045
-
-def myPrint(v1, v2, v3, v4):
-    print("Printing: ", v1, v2, v3, v4)
-
-def do_nothing():
-    print("Doing nothing")
-
-def sumAB(a,b):
-    return a+b
-
-symbol_table["myPrint"] = myPrint
-symbol_table["do_nothing"] = do_nothing
-symbol_table["sumAB"] = sumAB
-symbol_table["load"] = load_image
-symbol_table["show"] = show_image
-
-
-tokens = (
-    'NUMBER',
-    'VARIABLE',
-    'PLUS',
-    'MINUS',
-    'TIMES',
-    'DIV',
-    'EQUAL',
-    'EXP',
-    'LPAREN',
-    'RPAREN',
-    'COMMA',
-    'CONNECT',
-    'STRING',
-    'NONE'
+class GraphLexer(object):
+    tokens = (
+        'NUMBER', 'VARIABLE', 'PLUS', 'MINUS', 'TIMES', 'DIV', 'EQUAL', 'EXP',
+        'LPAREN', 'RPAREN', 'COMMA', 'CONNECT', "STRING"
     )
 
-t_PLUS = r'\+'
-t_MINUS = r'-'
-t_TIMES = r'\*'
-t_DIV = r'/'
-t_EQUAL = r'='
-t_EXP = r'\^'
-t_LPAREN = r'\('
-t_RPAREN = r'\)'
-t_COMMA = r','
-t_CONNECT = r'->'
+    t_PLUS = r'\+'
+    t_MINUS = r'-'
+    t_TIMES = r'\*'
+    t_DIV = r'/'
+    t_EQUAL = r'='
+    t_EXP = r'\^'
+    t_LPAREN = r'\('
+    t_RPAREN = r'\)'
+    t_COMMA = r','
+    t_CONNECT = r'->'
 
-def t_NONE(t):
-    r'None'
-    t.value = None
-    return t
+    def t_NUMBER(self, t):
+        r'\d+\.?\d*'
+        t.value = int(t.value) if '.' not in t.value else float(t.value)
+        return t
 
-def t_STRING(t):
-    r'\"(.)*\"'
-    t.value = t.value[1:-1]
+    def t_STRING(self, t):
+        r'\".*\"'
+        t.value = t.value[1:-1]
+        return t
 
-    return t
+    def t_VARIABLE(self, t):
+        r'[a-zA-Z_][a-zA-Z0-9_]*'
+        return t
 
-def t_NUMBER(t):
-    r'\d+\.?\d*'
-    t.value = float(t.value)
-    return t
+    def t_error(self, t):
+        print(f"Illegal character '{t.value[0]}'")
+        t.lexer.skip(1)
 
-def t_VARIABLE(t):
-    r'[a-zA-Z_][a-zA-Z0-9_]*'
-    return t
+    def __init__(self):
+        self.lexer = lex.lex(module=self)
 
-def t_error(t):
-    print("Error on  ", t.value)
-    t.lexer.skip(1)
+class GraphParser(object):
+    tokens = GraphLexer.tokens
 
-print("Translator v1.0")
+    def __init__(self):
+        self.lexer = GraphLexer()
+        self.parseGraph = None
+        self.NODE_COUNTER = 0
+        self.symbol_table = {
+            "pi": pi,
+            "e": 2.718281828459045,
+            "myPrint": print,
+            "do_nothing": lambda: print("Doing nothing"),
+            "sumAB": lambda a, b: a + b,
+            "load": load_image,
+            "show": show_image,
+            "gen_vector": lambda *args: gen_vector(*args),
+            "PI": pi,
+            "E": 2.718281828459045
+        }
+        self.parser = yacc.yacc(module=self)
 
-lexer = lex.lex()
+    def add_node(self, attr):
+        attr.setdefault("value", "")  # Ensure that 'value' key is always present
+        attr["counter"] = self.NODE_COUNTER
+        self.parseGraph.add_node(self.NODE_COUNTER, **attr)
+        self.NODE_COUNTER += 1
+        return self.parseGraph.nodes[self.NODE_COUNTER-1]
 
-def p_assignment_assign(p):
-    """
-    assignment : VARIABLE EQUAL expression
-                | VARIABLE EQUAL none_value
-    """
-    node = add_node({"type": "Ap_assignment_assignSSIGN", "label": f'=', "value": ''})
-    node_var = add_node({"type": "VARIABLE_ASSIGN", "label": f'VAR_{p[1]}', "value": p[1]})
-    
-    parseGraph.add_edge(node["counter"], node_var["counter"])
-    parseGraph.add_edge(node["counter"], p[3]["counter"])
-    p[0] = node
+    def execute_parse_tree(self, tree):
+        root_id = 0
+        result = self.visit_node(tree, root_id, -1)
+        return result
 
-def p_assignment_flow(p):
-    """
-    assignment : VARIABLE EQUAL flow
-    """
-    node = add_node( {"type": 'ASSIGN', "label": f'=', "value": ''} )
-    node_var = add_node( {"type": "VARIABLE_ASSIGN", "label": f'VAR_{p[1]}', "value": p[1]} )
-    parseGraph.add_edge(node["counter"], node_var["counter"])
-    parseGraph.add_edge(node["counter"], p[3]["counter"])
-    p[0] = node
+    def visit_node(self, tree, node_id, from_id):
+        children = list(tree.neighbors(node_id))
+        res = [self.visit_node(tree, c, node_id) for c in children if c != from_id]
+        current_node = tree.nodes[node_id]
 
-def p_flow(p):
-    """
-    flow : VARIABLE CONNECT flow_functions
-    """
-    connections = parseGraph.neighbors(p[3][0]["counter"])
+        node_type = current_node["type"]
+        node_value = current_node["value"]
 
-    for c in connections:
-        # El nodo con el ID c
-        c = parseGraph.nodes[c]
-        
-        if ( c["type"] == "PENDING_NODE"):
-            c["type"] = "VARIABLE"
-            c["label"] = f"VAR_{p[1]}"
-            c["vale"] = p[1]
-            break
-
-    p[0] = p[3][-1]
-def p_flow_functions(p):
-    """
-    flow_functions : flow_function_call CONNECT flow_functions
-    """
-
-    # Dime los vecinos del ID del nodo qué estpa ahi
-    connections = parseGraph.neighbors(p[3][0]["counter"])
-
-    for c in connections:
-        # El nodo con el ID c
-        c = parseGraph.nodes[c]
-        
-        if ( c["type"] == "PENDING_NODE"):
-            parseGraph.add_edge(  c["counter"], p[1]["counter"] )
-            break
-    
-    p[0] = [p[1]] + p[3]
-
-def p_flow_functions_alone(p):
-    """
-    flow_functions : flow_function_call
-    """
-    p[0] = [p[1]]
-
-def p_flow_function_call(p):
-    """
-    flow_function_call : VARIABLE LPAREN params RPAREN
-    """
-    pass
-
-    node = add_node({"type": "FLOW_FUNCTION_CALL", "label": f"ff_{p[1]}", "value":p[1]})
-    pending_node = add_node({"type": "PENDING_NODE", "label": f"pending", 'value': '' })
-    parseGraph.add_edge(node["counter"], pending_node["counter"])
-
-    for n in p[3]:
-        parseGraph.add_edge(node["counter"], n["counter"])
-
-    p[0] = node
-
-
-def p_assignment_expression(p):
-    """
-    assignment : expression
-    """
-    p[0] = p[1]
-
-def p_expression_plus(p):
-    """
-    expression : expression PLUS term
-    """
-    node = add_node({"type": "PLUS", "label": f'+', "value": ''})
-    parseGraph.add_edge(node["counter"], p[1]["counter"])
-    parseGraph.add_edge(node["counter"], p[3]["counter"])
-    p[0] = node
-
-def p_expression_minus(p):
-    """
-    expression : expression MINUS term
-    """
-    node = add_node({"type": "MINUS", "label": f'-', "value": ''})
-    parseGraph.add_edge(node["counter"], p[1]["counter"])
-    parseGraph.add_edge(node["counter"], p[3]["counter"])
-    p[0] = node
-
-def p_expression_term(p):
-    """
-    expression : term
-                | string_def
-    """
-    p[0] = p[1]
-
-def p_string_def(p):
-    """
-    string_def : STRING
-    """
-    p[0] = add_node({'type': "STRING", 'label': p[1], 'value': p[1]})
-
-def p_term_exponent(p):
-    """
-    term : exponent
-    """
-    p[0] = p[1]
-
-def p_term_times(p):
-    """
-    term : term TIMES exponent
-    """
-    node = add_node({"type": "TIMES", "label": f'*', "value": ''})
-    parseGraph.add_edge(node["counter"], p[1]["counter"])
-    parseGraph.add_edge(node["counter"], p[3]["counter"])
-    p[0] = node
-
-def p_term_div(p):
-    """
-    term : term DIV exponent
-    """
-    node = add_node({"type": "DIV", "label": f'/', "value": ''})
-    parseGraph.add_edge(node["counter"], p[1]["counter"])
-    parseGraph.add_edge(node["counter"], p[3]["counter"])
-    p[0] = node
-
-def p_exponent_factor(p):
-    """
-    exponent : factor
-    """
-    p[0] = p[1]
-
-def p_exponent_exp(p):
-    """
-    exponent : factor EXP factor
-    """
-    node = add_node({"type": "POWER", "label": f'POW', "value": ''})
-    parseGraph.add_edge(node["counter"], p[1]["counter"])
-    parseGraph.add_edge(node["counter"], p[3]["counter"])
-    p[0] = node
-
-def p_factor_number(p):
-    """
-    factor : NUMBER
-    """
-    n = add_node({"type": "NUMBER", "label": f'NUM_{p[1]}', "value": p[1]})
-    p[0] = n
-
-def p_factor_variable(p):
-    """
-    factor : VARIABLE
-    """
-    p[0] = add_node({"type": "VARIABLE", "label": f'VAR_{p[1]}', "value": p[1]})
-
-def p_factor_expression(p):
-    """
-    factor : LPAREN expression RPAREN
-    """
-    node = add_node({"type": "GROUP", "label": f'( )', "value": ''})
-    parseGraph.add_edge(node["counter"], p[2]["counter"])
-    p[0] = node
-
-def p_factor_function_call(p):
-    """
-    factor : function_call
-    """
-    p[0] = p[1]
-
-def p_function_call_no_params(p):
-    """
-    function_call : VARIABLE LPAREN RPAREN
-    """
-    p[0] = add_node({"type": "FUNCTION_CALL", "label": f'FUNC_{p[1]}', "value": p[1]})
-
-def p_function_call_with_params(p):
-    """
-    function_call : VARIABLE LPAREN params RPAREN
-    """
-    node = add_node({"type": "FUNCTION_CALL", "label": f'FUNC_{p[1]}', "value": p[1]})
-    for n in p[3]:
-        parseGraph.add_edge(node["counter"], n["counter"])
-    p[0] = node
-
-def p_none_value(p):
-    """
-    none_value : NONE
-    """
-    p[0] = add_node({"type": "NONE", "label": 'None', "value": None})
-
-def p_params_multiple(p):
-    """
-    params : params COMMA expression
-    """
-    p[0] = p[1] + [p[3]]
-
-def p_params_single(p):
-    """
-    params : expression
-    """
-    p[0] = [p[1]]
-
-def p_error(p):
-    print("Syntax error in input: ", p)
-
-def execute_parse_tree(tree):
-    root = tree.nodes
-    root_id = 0
-    res = visit_node(tree, root_id, -1)
-    return res
-
-def visit_node(tree, node_id, from_id):
-    children = tree.neighbors(node_id)
-    res = []
-    for c in children:
-        if c != from_id:
-            res.append(visit_node(tree, c, node_id))
-    current_node = tree.nodes[node_id]
-
-    if current_node["type"] == "INITIAL":
-        return res[0]
-
-    if current_node["type"] == "ASSIGN":
-        symbol_table[res[0]] = res[1]
-        return res[1]
-
-    if current_node["type"] == "NUMBER":
-        return current_node["value"]
-    
-    if current_node["type"] == "STRING":
-        return current_node["value"]
-
-    if current_node["type"] == "NONE":
-        return current_node["value"]
-    
-    if current_node["type"] == "PENDING_NODE":
-        return res[0]
-
-    if current_node["type"] == "VARIABLE_ASSIGN":
-        return current_node["value"]
-
-    if current_node["type"] == "VARIABLE":
-        if current_node["value"] in symbol_table:
-            return symbol_table[current_node["value"]]
-        print("ERROR! Variable not found, returning 0")
-        return 0
-
-    if (current_node["type"] == "FUNCTION_CALL" or current_node["type"] == "FLOW_FUNCTION_CALL"):
-        if current_node["value"] in symbol_table:
-            if len(res) > 0:
-                return symbol_table[current_node["value"]](*res)
+        if node_type == "INITIAL":
+            return res[0]
+        if node_type == "ASSIGN":
+            self.symbol_table[res[0]] = res[1]
+            return res[1]
+        if node_type == "NUMBER" or node_type == "STRING":
+            return node_value
+        if node_type == "PENDING_NODE":
+            return res[0]
+        if node_type == "VARIABLE_ASSIGN":
+            return node_value
+        if node_type == "VARIABLE":
+            return self.symbol_table.get(node_value, 0)
+        if node_type in {"FUNCTION_CALL", "FLOW_FUNCTION_CALL"}:
+            func = self.symbol_table.get(node_value, search_cv2(node_value))
+            if func is not None:
+                return func(*res) if res else func()
             else:
-                return symbol_table[current_node["value"]]()
-        print("ERROR! Function not found, returning 0")
-        return 0
+                print(f"Error: Undefined function '{node_value}'")
+                return None
+        if node_type == "POWER":
+            return pow(res[0], res[1])
+        if node_type == "PLUS":
+            return res[0] + res[1]
+        if node_type == "MINUS":
+            return res[0] - res[1]
+        if node_type == "TIMES":
+            return res[0] * res[1]
+        if node_type == "DIV":
+            return res[0] / res[1]
+        if node_type == "GROUP":
+            return res[0]
 
-    if current_node["type"] == "POWER":
-        return pow(res[0], res[1])
+    def p_assignment_assign(self, p):
+        """assignment : VARIABLE EQUAL expression"""
+        node = self.add_node({"type": "ASSIGN", "label": '=', "value": ''})
+        node_var = self.add_node({"type": "VARIABLE_ASSIGN", "label": f'VAR_{p[1]}', "value": p[1]})
+        self.parseGraph.add_edge(node["counter"], node_var["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        p[0] = node
 
-    if current_node["type"] == "PLUS":
-        return res[0] + res[1]
+    def p_assignment_expression(self, p):
+        """assignment : expression"""
+        p[0] = p[1]
 
-    if current_node["type"] == "MINUS":
-        return res[0] - res[1]
+    def p_assignment_flow(self, p):
+        """assignment : VARIABLE EQUAL flow"""
+        node = self.add_node({"type": "ASSIGN", "label": '=', "value": ''})
+        node_var = self.add_node({"type": "VARIABLE_ASSIGN", "label": f'VAR_{p[1]}', "value": p[1]})
+        self.parseGraph.add_edge(node["counter"], node_var["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        p[0] = node
 
-    if current_node["type"] == "TIMES":
-        return res[0] * res[1]
+    def p_flow(self, p):
+        """flow : VARIABLE CONNECT flow_functions"""
+        connections = list(self.parseGraph.neighbors(p[3][0]["counter"]))
+        for c in connections:
+            c_node = self.parseGraph.nodes[c]
+            if c_node["type"] == "PENDING_NODE":
+                c_node["type"] = "VARIABLE"
+                c_node["label"] = f"VAR_{p[1]}"
+                c_node["value"] = p[1]
+                break
+        p[0] = p[3][-1]
 
-    if current_node["type"] == "DIV":
-        return res[0] / res[1]
+    def p_flow_functions(self, p):
+        """flow_functions : flow_function_call CONNECT flow_functions"""
+        connections = list(self.parseGraph.neighbors(p[3][0]["counter"]))
+        for c in connections:
+            c_node = self.parseGraph.nodes[c]
+            if c_node["type"] == "PENDING_NODE":
+                self.parseGraph.add_edge(c_node["counter"], p[1]["counter"])
+                break
+        p[0] = [p[1]] + p[3]
 
-    if current_node["type"] == "GROUP":
-        return res[0]
+    def p_flow_functions_alone(self, p):
+        """flow_functions : flow_function_call"""
+        p[0] = [p[1]]
 
-parser = yacc.yacc()
+    def p_flow_function_call(self, p):
+        """flow_function_call : VARIABLE LPAREN params RPAREN"""
+        node = self.add_node({"type": "FLOW_FUNCTION_CALL", "label": f"ff_{p[1]}", "value": p[1]})
+        pending_node = self.add_node({"type": "PENDING_NODE", "label": "pending", "value": ""})
+        self.parseGraph.add_edge(node["counter"], pending_node["counter"])
+        for n in p[3]:
+            self.parseGraph.add_edge(node["counter"], n["counter"])
+        p[0] = node
 
-result = 0
-current_op = 0
+    def p_expression_plus(self, p):
+        """expression : expression PLUS term"""
+        node = self.add_node({"type": "PLUS", "label": '+', "value": ''})
+        self.parseGraph.add_edge(node["counter"], p[1]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        p[0] = node
 
-while True:
-    data = input(">")
+    def p_expression_minus(self, p):
+        """expression : expression MINUS term"""
+        node = self.add_node({"type": "MINUS", "label": '-', "value": ''})
+        self.parseGraph.add_edge(node["counter"], p[1]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        p[0] = node
 
-    if data == 'exit':
-        break
+    def p_expression_term(self, p):
+        """expression : term 
+                      | string"""
+        p[0] = p[1]
 
-    if data == 'st':
-        print(symbol_table)
-        continue
+    def p_string_def(self, p):
+        """string : STRING"""
+        p[0] = self.add_node({"type": "STRING", "label": f'STR_{p[1]}', "value": p[1]})
 
-    parseGraph = nx.Graph()
-    NODE_COUNTER = 0
-    root = add_node({"type": "INITIAL", "label": "INIT"})
+    def p_term_exponent(self, p):
+        """term : exponent"""
+        p[0] = p[1]
 
-    result = parser.parse(data)
+    def p_term_times(self, p):
+        """term : term TIMES exponent"""
+        node = self.add_node({"type": "TIMES", "label": '*', "value": ''})
+        self.parseGraph.add_edge(node["counter"], p[1]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        p[0] = node
 
-    if result:
-        parseGraph.add_edge(root["counter"], result["counter"])
-        labels = nx.get_node_attributes(parseGraph, 'label')
-        nx.draw(parseGraph, labels=labels, with_labels=True)
-        plt.show()
-        result = execute_parse_tree(parseGraph)
-        print("Result: ", result)
-    else:
-        print("Failed to parse input.")
+    def p_term_div(self, p):
+        """term : term DIV exponent"""
+        node = self.add_node({"type": "DIV", "label": '/', "value": ''})
+        self.parseGraph.add_edge(node["counter"], p[1]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        p[0] = node
 
-print("\nended")
+    def p_exponent_factor(self, p):
+        """exponent : factor"""
+        p[0] = p[1]
+
+    def p_exponent_exp(self, p):
+        """exponent : factor EXP factor"""
+        node = self.add_node({"type": "POWER", "label": 'POW', "value": ''})
+        self.parseGraph.add_edge(node["counter"], p[1]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        p[0] = node
+
+    def p_factor_number(self, p):
+        """factor : NUMBER"""
+        p[0] = self.add_node({"type": "NUMBER", "label": f'NUM_{p[1]}', "value": p[1]})
+
+    def p_factor_variable(self, p):
+        """factor : VARIABLE"""
+        p[0] = self.add_node({"type": "VARIABLE", "label": f'VAR_{p[1]}', "value": p[1]})
+
+    def p_factor_expression(self, p):
+        """factor : LPAREN expression RPAREN"""
+        node = self.add_node({"type": "GROUP", "label": '( )', "value": ''})
+        self.parseGraph.add_edge(node["counter"], p[2]["counter"])
+        p[0] = node
+
+    def p_factor_function_call(self, p):
+        """factor : function_call"""
+        p[0] = p[1]
+
+    def p_function_call_no_params(self, p):
+        """function_call : VARIABLE LPAREN RPAREN"""
+        p[0] = self.add_node({"type": "FUNCTION_CALL", "label": f'FUNC_{p[1]}', "value": p[1]})
+
+    def p_function_call_params(self, p):
+        """function_call : VARIABLE LPAREN params RPAREN"""
+        node = self.add_node({'type': 'FUNCTION_CALL', 'label': f'FUN_{p[1]}', 'value': p[1]})
+        for n in p[3]:
+            self.parseGraph.add_edge(node["counter"], n["counter"])
+        p[0] = node
+
+    def p_params(self, p):
+        """params : params COMMA expression 
+                  | expression"""
+        if len(p) > 2:
+            p[0] = p[1] + [p[3]]
+        else:
+            p[0] = [p[1]]
+
+    def p_error(self, p):
+        print(f"Syntax error at '{p.value}'")
+
+    def main(self):
+        while True:
+            data = input(">")
+            if data == 'exit':
+                break
+            if data == 'st':
+                print(self.symbol_table)
+                continue
+            self.parseGraph = nx.Graph()
+            self.NODE_COUNTER = 0
+            root = self.add_node({"type": "INITIAL", "label": "INIT"})
+            result = self.parser.parse(data)
+            self.parseGraph.add_edge(root["counter"], result["counter"])
+            labels = nx.get_node_attributes(self.parseGraph, "label")
+            nx.draw(self.parseGraph, labels=labels, with_labels=True)
+            plt.show()
+            result = self.execute_parse_tree(self.parseGraph)
+            print("Result:", result)
+
+if __name__ == "__main__":
+    parser = GraphParser()
+    parser.main()
