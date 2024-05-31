@@ -15,6 +15,7 @@ class GraphLexer(object):
         'NUMBER', 'VARIABLE', 'PLUS', 'MINUS', 'TIMES', 'DIV', 'EQUAL', 'EXP',
         'LPAREN', 'RPAREN', 'COMMA', 'CONNECT', "STRING", 'NONE',"GREATER", "LESS", "GREATER_EQUAL", "LESS_EQUAL", "EQUAL_EQUAL", 
         "NOT_EQUAL","OPEN_CURLY","CLOSE_CURLY","IF","ELSE"
+        'LPAREN', 'RPAREN', 'COMMA', 'CONNECT', "STRING", 'NONE', 'LBRACK', 'RBRACK', 'INDEX'
     )
 
     t_PLUS = r'\+'
@@ -27,6 +28,8 @@ class GraphLexer(object):
     t_RPAREN = r'\)'
     t_COMMA = r','
     t_CONNECT = r'->'
+    t_LBRACK = r'\['
+    t_RBRACK = r'\]'
 
     # For conditionals
     t_GREATER = r'>'
@@ -65,6 +68,10 @@ class GraphLexer(object):
         r'[a-zA-Z_][a-zA-Z0-9_]*'
         return t
 
+    def t_INDEX(self, t):
+        r'[\d+]'
+        return t
+    
     def t_error(self, t):
         print(f"Illegal character '{t.value[0]}'")
         t.lexer.skip(1)
@@ -152,7 +159,7 @@ class GraphParser(object):
         if node_type == "ASSIGN":
             self.symbol_table[res[0]] = res[1]
             return res[1]
-        if node_type == "NUMBER" or node_type == "STRING" or node_type == "NONE":
+        if node_type == "NUMBER" or node_type == "STRING" or node_type == "NONE" or node_type == "LIST":
             return node_value
         if node_type == "PENDING_NODE":
             return res[0]
@@ -168,6 +175,20 @@ class GraphParser(object):
             else:
                 print(f"Error: Undefined function '{node_value}'")
                 return None
+        if node_type == "INDEX":
+            if isinstance(res[0], list):
+                return res[0][res[1]]["value"]
+            raise TypeError(f"Indexing not supported for {type(res[0])}")
+            
+        if node_type == "INDEX_ASSIGN":
+            var_name = current_node["variable"]
+            index = res[1]
+            value = res[2]
+            if var_name in self.symbol_table and isinstance(self.symbol_table[var_name], list):
+                self.symbol_table[var_name][index]["value"] = value
+                return self.symbol_table[var_name]
+            else:
+                raise TypeError(f"Index assignment not supported for {type(self.symbol_table.get(var_name))}")
         # Check for None value before performing operation
         if None in res:
                 raise TypeError(f"unsupported operand type(s) on 'NoneType' for {node_type} operation")
@@ -225,6 +246,16 @@ class GraphParser(object):
         self.parseGraph.add_edge(node["counter"], p[10]["counter"])
         p[0] = node
         
+
+
+    def p_index_assignment_assign(self, p):
+        """assignment : VARIABLE LBRACK expression RBRACK EQUAL expression"""
+        node = self.add_node({"type": "INDEX_ASSIGN", "label": '=', "variable": p[1], "value": ''})
+        node_var = self.add_node({"type": "VARIABLE", "label": f'VAR_{p[1]}', "value": p[1]})
+        self.parseGraph.add_edge(node["counter"], node_var["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[6]["counter"])
+        p[0] = node
 
     def p_assignment_assign(self, p):
         """assignment : VARIABLE EQUAL expression"""
@@ -362,6 +393,40 @@ class GraphParser(object):
         self.parseGraph.add_edge(node["counter"], p[2]["counter"])
         p[0] = node
 
+    # List implementation methods
+    def p_factor_list(self, p):
+        """factor : list
+                  | list_empty """
+        p[0] = p[1]
+
+    def p_list_empty(self, p):
+        """list_empty : LBRACK RBRACK"""
+        node = self.add_node({"type": "LIST", "label": 'LIST', "value": ""})
+        p[0] = node
+
+    def p_list(self, p):
+        """list : LBRACK list_elements RBRACK"""
+        node = self.add_node({"type": "LIST", "label": 'LIST', "value": p[2]})
+        for n in p[2]:
+            self.parseGraph.add_edge(node["counter"], n["counter"])
+        p[0] = node
+
+    def p_list_elements(self, p):
+        """list_elements : list_elements COMMA expression
+                         | expression"""
+        if len(p) > 2:
+            p[0] = p[1] + [p[3]]
+        else:
+            p[0] = [p[1]]
+
+    def p_expression_index(self, p):
+        """expression : VARIABLE LBRACK expression RBRACK"""
+        node = self.add_node({"type": "INDEX", "label": 'INDEX', "value": ''})
+        node_var = self.add_node({"type": "VARIABLE", "label": f'VAR_{p[1]}', "value": p[1]})
+        self.parseGraph.add_edge(node["counter"], node_var["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        p[0] = node
+
     def p_factor_function_call(self, p):
         """factor : function_call"""
         p[0] = p[1]
@@ -376,7 +441,6 @@ class GraphParser(object):
         for n in p[3]:
             self.parseGraph.add_edge(node["counter"], n["counter"])
         p[0] = node
-
 
     def p_params(self, p):
         """params : params COMMA expression 
