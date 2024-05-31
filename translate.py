@@ -5,13 +5,15 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import functions
 
+
 # Import custom libraries
 from libary import gen_vector, load_image, search_cv2, show_image
 
 class GraphLexer(object):
     tokens = (
         'NUMBER', 'VARIABLE', 'PLUS', 'MINUS', 'TIMES', 'DIV', 'EQUAL', 'EXP',
-        'LPAREN', 'RPAREN', 'COMMA', 'CONNECT', "STRING", 'NONE'
+        'LPAREN', 'RPAREN', 'COMMA', 'CONNECT', "STRING", 'NONE',"GREATER", "LESS", "GREATER_EQUAL", "LESS_EQUAL", "EQUAL_EQUAL", 
+        "NOT_EQUAL","OPEN_CURLY","CLOSE_CURLY","IF","ELSE"
     )
 
     t_PLUS = r'\+'
@@ -24,6 +26,24 @@ class GraphLexer(object):
     t_RPAREN = r'\)'
     t_COMMA = r','
     t_CONNECT = r'->'
+
+    # For conditionals
+    t_GREATER = r'>'
+    t_LESS = r'<'
+    t_GREATER_EQUAL = r'>='
+    t_LESS_EQUAL = r'<='
+    t_EQUAL_EQUAL = r'=='
+    t_NOT_EQUAL = r'!='
+    t_OPEN_CURLY = r'{'
+    t_CLOSE_CURLY = r'}'
+
+    def t_IF(self, t):
+        r'if'
+        return t
+    
+    def t_ELSE(self, t):
+        r'else'
+        return t
 
     def t_NONE(self, t):
         r'None'
@@ -91,6 +111,32 @@ class GraphParser(object):
         root_id = 0
         result = self.visit_node(tree, root_id, -1)
         return result
+    
+    def compare(self, a, b, op):
+        if op == ">":
+            return a > b
+        if op == "<":
+            return a < b
+        if op == ">=":
+            return a >= b
+        if op == "<=":
+            return a <= b
+        if op == "==":
+            return a == b
+        if op == "!=":
+            return a != b
+        
+    def resolve_conditional(self, condition, true_branch, false_branch):
+        # First check the condition to see if it is true
+        print(f"Condition: {condition}")
+        print(f"True branch: {true_branch}")
+        print(f"False branch: {false_branch}")
+        if condition:
+            return true_branch
+        else:
+            if false_branch is None:
+                return None
+            return false_branch
 
     def visit_node(self, tree, node_id, from_id):
         children = list(tree.neighbors(node_id))
@@ -135,7 +181,49 @@ class GraphParser(object):
             return res[0] / res[1]
         if node_type == "GROUP":
             return res[0]
+        if node_type == "COMPARISON":
+            return self.compare(res[0], res[1], current_node["label"])
+        if node_type == "CONDITIONAL":
+            second_branch = None
+            if len(res) > 2:
+                second_branch = res[2]
+            return self.resolve_conditional(res[0], res[1], second_branch)
         
+    def p_statements_statement(self,p):
+        'statements : statement'
+        p[0] = p[1]
+        
+
+    # Statement options
+    def p_statement_assignment(self,p):
+        'statement : assignment'
+        p[0] = p[1]
+        
+
+    def p_statement_conditional(self,p):
+        'statement : conditional'
+        p[0] = p[1]
+        
+
+    def p_statement_expression(self,p):
+        'statement : expression'
+        p[0] = p[1]
+        
+    def p_conditional(self, p):
+        """conditional : IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY"""
+        node = self.add_node({"type": "CONDITIONAL", "label": "IF", "value": ''})
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[6]["counter"])
+        p[0] = node
+    def p_conditional_else(self, p):
+        """conditional : IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY"""
+        node = self.add_node({"type": "CONDITIONAL", "label": "IF", "value": ''})
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[6]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[10]["counter"])
+        p[0] = node
+        
+
     def p_assignment_assign(self, p):
         """assignment : VARIABLE EQUAL expression"""
         node = self.add_node({"type": "ASSIGN", "label": '=', "value": ''})
@@ -144,10 +232,6 @@ class GraphParser(object):
         self.parseGraph.add_edge(node["counter"], p[3]["counter"])
         p[0] = node
 
-    def p_assignment_expression(self, p):
-        """assignment : expression"""
-        p[0] = p[1]
-
     def p_assignment_flow(self, p):
         """assignment : VARIABLE EQUAL flow"""
         node = self.add_node({"type": "ASSIGN", "label": '=', "value": ''})
@@ -155,6 +239,21 @@ class GraphParser(object):
         self.parseGraph.add_edge(node["counter"], node_var["counter"])
         self.parseGraph.add_edge(node["counter"], p[3]["counter"])
         p[0] = node
+    
+
+
+    def p_expression_comparison(self, p):
+        """comparison : expression GREATER expression
+                      | expression LESS expression
+                      | expression GREATER_EQUAL expression
+                      | expression LESS_EQUAL expression
+                      | expression EQUAL_EQUAL expression
+                      | expression NOT_EQUAL expression"""
+        node = self.add_node({"type": "COMPARISON", "label": p[2], "value": ''})
+        self.parseGraph.add_edge(node["counter"], p[1]["counter"])
+        self.parseGraph.add_edge(node["counter"], p[3]["counter"])
+        p[0] = node
+            
 
     def p_flow(self, p):
         """flow : VARIABLE CONNECT flow_functions"""
@@ -288,7 +387,7 @@ class GraphParser(object):
     def p_error(self, p):
         print(f"Syntax error at '{p.value}'")
 
-    def main(self):
+    def interactive_main(self):
         while True:
             if len(self.command_queue) < 1:
                 new_data = input(">")
@@ -307,12 +406,34 @@ class GraphParser(object):
                 self.parseGraph.add_edge(root["counter"], result["counter"])
                 labels = nx.get_node_attributes(self.parseGraph, "label")
                 nx.draw(self.parseGraph, labels=labels, with_labels=True)
-                plt.show()
+                # plt.show()
                 result = self.execute_parse_tree(self.parseGraph)
                 print("Result:", result)
             else:
                 print("Failed to parse input.")
 
-if __name__ == "__main__":
-    parser = GraphParser()
-    parser.main()
+    def main(self,file):
+        """
+        Main function to parse the file
+        """
+        self.execute_file(file)
+        line = 0
+        results = []
+        if len(self.command_queue) < 1:
+            new_data = input(">")
+            self.command_queue.append(new_data)
+        while len(self.command_queue) > 0:
+            data = self.command_queue.pop(0)
+            self.parseGraph = nx.Graph()
+            self.NODE_COUNTER = 0
+            root = self.add_node({"type": "INITIAL", "label": "INIT"})
+            result = self.parser.parse(data)
+            if result:
+                self.parseGraph.add_edge(root["counter"], result["counter"])
+                result = self.execute_parse_tree(self.parseGraph)
+                results.append(result)
+            else:
+                raise Exception("Failed to parse input in line " + str(line))
+            line += 1
+        return results
+
