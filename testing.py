@@ -46,10 +46,10 @@ def run_test(file):
         try:
             res = main(f"testing_cache/{file}")
         except Exception as e:
-            print(Fore.RED + f"❌Test {file} failed exp:{expected_result},res:${e}")
-            return
+            print(Fore.RED + f"❌Test {file} failed e:{e}")
+        res =  str(main(f"testing_cache/{file}")).replace("\n","")
         # Compare the results
-        if str(res) == expected_result:
+        if res == expected_result:
             print(f"🧪Test {file} passed: exp:{expected_result},res:{res}")
         else:
             print(Fore.RED + f"❌Test {file} failed exp:{expected_result},res:{res}")

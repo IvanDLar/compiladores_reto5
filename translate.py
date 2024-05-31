@@ -4,6 +4,7 @@ from math import pi, pow
 import networkx as nx
 import matplotlib.pyplot as plt
 import functions
+import os
 
 
 # Import custom libraries
@@ -160,6 +161,7 @@ class GraphParser(object):
         if node_type == "VARIABLE":
             return self.symbol_table.get(node_value, 0)
         if node_type in {"FUNCTION_CALL", "FLOW_FUNCTION_CALL"}:
+            print(f"Function call: {node_value}")
             func = self.symbol_table.get(node_value, search_cv2(node_value))
             if func is not None:
                 return func(*res) if res else func()
@@ -435,5 +437,8 @@ class GraphParser(object):
             else:
                 raise Exception("Failed to parse input in line " + str(line))
             line += 1
+        # save all res to file in one line, results separed by comma ex [1 ,2 ,3 ,4]
+        # with open("output.txt", "w") as f:
+        #     f.write(str(results).replace("\n", ""))
         return results
 
