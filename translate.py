@@ -14,8 +14,8 @@ class GraphLexer(object):
     tokens = (
         'NUMBER', 'VARIABLE', 'PLUS', 'MINUS', 'TIMES', 'DIV', 'EQUAL', 'EXP',
         'LPAREN', 'RPAREN', 'COMMA', 'CONNECT', "STRING", 'NONE',"GREATER", "LESS", "GREATER_EQUAL", "LESS_EQUAL", "EQUAL_EQUAL", 
-        "NOT_EQUAL","OPEN_CURLY","CLOSE_CURLY","IF","ELSE"
-        'LPAREN', 'RPAREN', 'COMMA', 'CONNECT', "STRING", 'NONE', 'LBRACK', 'RBRACK', 'INDEX'
+        "NOT_EQUAL","OPEN_CURLY","CLOSE_CURLY","IF","ELSE",
+         'LBRACK', 'RBRACK'
     )
 
     t_PLUS = r'\+'
@@ -66,10 +66,6 @@ class GraphLexer(object):
 
     def t_VARIABLE(self, t):
         r'[a-zA-Z_][a-zA-Z0-9_]*'
-        return t
-
-    def t_INDEX(self, t):
-        r'[\d+]'
         return t
     
     def t_error(self, t):
