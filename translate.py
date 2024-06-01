@@ -218,6 +218,9 @@ class GraphParser(object):
         'statement : assignment'
         p[0] = p[1]
         
+    def p_statement_index(self,p):
+        'statement : index'
+        p[0] = p[1]
 
     def p_statement_conditional(self,p):
         'statement : conditional'
@@ -416,7 +419,7 @@ class GraphParser(object):
             p[0] = [p[1]]
 
     def p_expression_index(self, p):
-        """expression : VARIABLE LBRACK expression RBRACK"""
+        """index : VARIABLE LBRACK expression RBRACK"""
         node = self.add_node({"type": "INDEX", "label": 'INDEX', "value": ''})
         node_var = self.add_node({"type": "VARIABLE", "label": f'VAR_{p[1]}', "value": p[1]})
         self.parseGraph.add_edge(node["counter"], node_var["counter"])
