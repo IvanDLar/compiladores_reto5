@@ -496,6 +496,17 @@ class GraphParser(object):
             if result:
                 self.parseGraph.add_edge(root["counter"], result["counter"])
                 result = self.execute_parse_tree(self.parseGraph)
+                labels = nx.get_node_attributes(self.parseGraph, "label")
+                # Save the file in trees directory
+                paths = file.split("/")
+                for i in range(1, len(paths)):
+                    if not os.path.exists(f"trees/{'/'.join(paths[:i])}"):
+                        os.mkdir(f"trees/{'/'.join(paths[:i])}")
+                
+                nx.draw(self.parseGraph, labels=labels, with_labels=True)
+                plt.savefig(f"trees/{file}_{line}.png")
+                # Restart tree
+                plt.clf()
                 results.append(result)
             else:
                 raise Exception("Failed to parse input in line " + str(line))

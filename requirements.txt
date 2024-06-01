@@ -1,0 +1,6 @@
+colorama==0.4.4
+matplotlib==3.9.0
+networkx==3.2.1
+numpy==1.26.4
+opencv_python==4.9.0.80
+ply==3.11
