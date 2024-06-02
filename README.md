@@ -47,6 +47,17 @@ In file mode (this will parse the file and print the results)
 ```bash
 python main.py -m f -f <file_path>
 ```
+### Implemented Features
+
+We implemented the following features for the language:
+
+- Accept files and execute the content
+- Accept None as grammar value for variable initialization
+- Accept lists
+- Automated tests. Use of a TESTING framework to test all the features of your grammar.
+- Implement conditionals
+
+
 
 ### Testing
 
