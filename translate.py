@@ -172,10 +172,8 @@ class GraphParser(object):
                 print(f"Error: Undefined function '{node_value}'")
                 return None
         if node_type == "INDEX":
-            if isinstance(res[0], list):
-                return res[0][res[1]]["value"]
-            raise TypeError(f"Indexing not supported for {type(res[0])}")
-            
+            return res[0][res[1]]["value"]
+                # array[0]
         if node_type == "INDEX_ASSIGN":
             var_name = current_node["variable"]
             index = res[1]
@@ -212,21 +210,15 @@ class GraphParser(object):
         'statements : statement'
         p[0] = p[1]
         
-
     # Statement options
     def p_statement_assignment(self,p):
         'statement : assignment'
-        p[0] = p[1]
-        
-    def p_statement_index(self,p):
-        'statement : index'
         p[0] = p[1]
 
     def p_statement_conditional(self,p):
         'statement : conditional'
         p[0] = p[1]
         
-
     def p_statement_expression(self,p):
         'statement : expression'
         p[0] = p[1]
@@ -430,6 +422,10 @@ class GraphParser(object):
         """factor : function_call"""
         p[0] = p[1]
 
+    def p_statement_index(self,p):
+        'factor : index'
+        p[0] = p[1]
+        
     def p_function_call_no_params(self, p):
         """function_call : VARIABLE LPAREN RPAREN"""
         p[0] = self.add_node({"type": "FUNCTION_CALL", "label": f'FUNC_{p[1]}', "value": p[1]})

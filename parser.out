@@ -5,7 +5,7 @@ Grammar
 Rule 0     S' -> statements
 Rule 1     statements -> statement
 Rule 2     statement -> assignment
-Rule 3     statement -> index
+Rule 3     factor -> index
 Rule 4     statement -> conditional
 Rule 5     statement -> expression
 Rule 6     conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY
@@ -109,13 +109,11 @@ state 0
     (0) S' -> . statements
     (1) statements -> . statement
     (2) statement -> . assignment
-    (3) statement -> . index
     (4) statement -> . conditional
     (5) statement -> . expression
     (8) assignment -> . VARIABLE LBRACK expression RBRACK EQUAL expression
     (9) assignment -> . VARIABLE EQUAL expression
     (10) assignment -> . VARIABLE EQUAL flow
-    (41) index -> . VARIABLE LBRACK expression RBRACK
     (6) conditional -> . IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY
     (7) conditional -> . IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY
     (21) expression -> . expression PLUS term
@@ -129,35 +127,37 @@ state 0
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    VARIABLE        shift and go to state 7
-    IF              shift and go to state 9
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    VARIABLE        shift and go to state 6
+    IF              shift and go to state 8
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
     statements                     shift and go to state 1
     statement                      shift and go to state 2
     assignment                     shift and go to state 3
-    index                          shift and go to state 4
-    conditional                    shift and go to state 5
-    expression                     shift and go to state 6
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    conditional                    shift and go to state 4
+    expression                     shift and go to state 5
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -186,21 +186,13 @@ state 3
 
 state 4
 
-    (3) statement -> index .
-
-    $end            reduce using rule 3 (statement -> index .)
-    CLOSE_CURLY     reduce using rule 3 (statement -> index .)
-
-
-state 5
-
     (4) statement -> conditional .
 
     $end            reduce using rule 4 (statement -> conditional .)
     CLOSE_CURLY     reduce using rule 4 (statement -> conditional .)
 
 
-state 6
+state 5
 
     (5) statement -> expression .
     (21) expression -> expression . PLUS term
@@ -212,13 +204,13 @@ state 6
     MINUS           shift and go to state 22
 
 
-state 7
+state 6
 
     (8) assignment -> VARIABLE . LBRACK expression RBRACK EQUAL expression
     (9) assignment -> VARIABLE . EQUAL expression
     (10) assignment -> VARIABLE . EQUAL flow
-    (41) index -> VARIABLE . LBRACK expression RBRACK
     (33) factor -> VARIABLE .
+    (41) index -> VARIABLE . LBRACK expression RBRACK
     (43) function_call -> VARIABLE . LPAREN RPAREN
     (44) function_call -> VARIABLE . LPAREN params RPAREN
 
@@ -234,7 +226,7 @@ state 7
     LPAREN          shift and go to state 25
 
 
-state 8
+state 7
 
     (38) list -> LBRACK . list_elements RBRACK
     (37) list_empty -> LBRACK . RBRACK
@@ -251,36 +243,39 @@ state 8
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
     RBRACK          shift and go to state 27
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
     list_elements                  shift and go to state 26
     expression                     shift and go to state 28
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 9
+state 8
 
     (6) conditional -> IF . LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY
     (7) conditional -> IF . LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY
@@ -288,7 +283,7 @@ state 9
     LPAREN          shift and go to state 30
 
 
-state 10
+state 9
 
     (34) factor -> LPAREN . expression RPAREN
     (21) expression -> . expression PLUS term
@@ -302,34 +297,37 @@ state 10
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
     expression                     shift and go to state 31
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 11
+state 10
 
     (23) expression -> term .
     (28) term -> term . TIMES exponent
@@ -352,7 +350,7 @@ state 11
     DIV             shift and go to state 33
 
 
-state 12
+state 11
 
     (24) expression -> string .
 
@@ -371,7 +369,7 @@ state 12
     NOT_EQUAL       reduce using rule 24 (expression -> string .)
 
 
-state 13
+state 12
 
     (26) expression -> NONE .
 
@@ -390,7 +388,7 @@ state 13
     NOT_EQUAL       reduce using rule 26 (expression -> NONE .)
 
 
-state 14
+state 13
 
     (27) term -> exponent .
 
@@ -411,7 +409,7 @@ state 14
     NOT_EQUAL       reduce using rule 27 (term -> exponent .)
 
 
-state 15
+state 14
 
     (25) string -> STRING .
 
@@ -430,7 +428,7 @@ state 15
     NOT_EQUAL       reduce using rule 25 (string -> STRING .)
 
 
-state 16
+state 15
 
     (30) exponent -> factor .
     (31) exponent -> factor . EXP factor
@@ -451,6 +449,28 @@ state 16
     EQUAL_EQUAL     reduce using rule 30 (exponent -> factor .)
     NOT_EQUAL       reduce using rule 30 (exponent -> factor .)
     EXP             shift and go to state 34
+
+
+state 16
+
+    (3) factor -> index .
+
+    EXP             reduce using rule 3 (factor -> index .)
+    TIMES           reduce using rule 3 (factor -> index .)
+    DIV             reduce using rule 3 (factor -> index .)
+    PLUS            reduce using rule 3 (factor -> index .)
+    MINUS           reduce using rule 3 (factor -> index .)
+    $end            reduce using rule 3 (factor -> index .)
+    RBRACK          reduce using rule 3 (factor -> index .)
+    COMMA           reduce using rule 3 (factor -> index .)
+    RPAREN          reduce using rule 3 (factor -> index .)
+    CLOSE_CURLY     reduce using rule 3 (factor -> index .)
+    GREATER         reduce using rule 3 (factor -> index .)
+    LESS            reduce using rule 3 (factor -> index .)
+    GREATER_EQUAL   reduce using rule 3 (factor -> index .)
+    LESS_EQUAL      reduce using rule 3 (factor -> index .)
+    EQUAL_EQUAL     reduce using rule 3 (factor -> index .)
+    NOT_EQUAL       reduce using rule 3 (factor -> index .)
 
 
 state 17
@@ -549,12 +569,14 @@ state 21
     (29) term -> . term DIV exponent
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
@@ -562,12 +584,13 @@ state 21
 
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
     term                           shift and go to state 35
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -580,12 +603,14 @@ state 22
     (29) term -> . term DIV exponent
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
@@ -593,12 +618,13 @@ state 22
 
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
     term                           shift and go to state 36
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -618,29 +644,32 @@ state 23
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
     expression                     shift and go to state 37
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -661,30 +690,33 @@ state 24
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
+    NONE            shift and go to state 12
     VARIABLE        shift and go to state 38
-    STRING          shift and go to state 15
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
     expression                     shift and go to state 39
     flow                           shift and go to state 40
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -706,31 +738,34 @@ state 25
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
     RPAREN          shift and go to state 41
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
     params                         shift and go to state 42
     expression                     shift and go to state 43
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -781,6 +816,7 @@ state 28
 state 29
 
     (33) factor -> VARIABLE .
+    (41) index -> VARIABLE . LBRACK expression RBRACK
     (43) function_call -> VARIABLE . LPAREN RPAREN
     (44) function_call -> VARIABLE . LPAREN params RPAREN
 
@@ -800,6 +836,7 @@ state 29
     LESS_EQUAL      reduce using rule 33 (factor -> VARIABLE .)
     EQUAL_EQUAL     reduce using rule 33 (factor -> VARIABLE .)
     NOT_EQUAL       reduce using rule 33 (factor -> VARIABLE .)
+    LBRACK          shift and go to state 46
     LPAREN          shift and go to state 25
 
 
@@ -824,30 +861,33 @@ state 30
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    comparison                     shift and go to state 46
-    expression                     shift and go to state 47
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    comparison                     shift and go to state 47
+    expression                     shift and go to state 48
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -858,7 +898,7 @@ state 31
     (21) expression -> expression . PLUS term
     (22) expression -> expression . MINUS term
 
-    RPAREN          shift and go to state 48
+    RPAREN          shift and go to state 49
     PLUS            shift and go to state 21
     MINUS           shift and go to state 22
 
@@ -868,12 +908,14 @@ state 32
     (28) term -> term TIMES . exponent
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
@@ -881,11 +923,12 @@ state 32
 
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    exponent                       shift and go to state 49
-    factor                         shift and go to state 16
+    exponent                       shift and go to state 50
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -895,12 +938,14 @@ state 33
     (29) term -> term DIV . exponent
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
@@ -908,11 +953,12 @@ state 33
 
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    exponent                       shift and go to state 50
-    factor                         shift and go to state 16
+    exponent                       shift and go to state 51
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -920,12 +966,14 @@ state 33
 state 34
 
     (31) exponent -> factor EXP . factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
@@ -933,10 +981,11 @@ state 34
 
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    factor                         shift and go to state 51
+    factor                         shift and go to state 52
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
@@ -994,7 +1043,7 @@ state 37
     (21) expression -> expression . PLUS term
     (22) expression -> expression . MINUS term
 
-    RBRACK          shift and go to state 52
+    RBRACK          shift and go to state 53
     PLUS            shift and go to state 21
     MINUS           shift and go to state 22
 
@@ -1003,10 +1052,11 @@ state 38
 
     (17) flow -> VARIABLE . CONNECT flow_functions
     (33) factor -> VARIABLE .
+    (41) index -> VARIABLE . LBRACK expression RBRACK
     (43) function_call -> VARIABLE . LPAREN RPAREN
     (44) function_call -> VARIABLE . LPAREN params RPAREN
 
-    CONNECT         shift and go to state 53
+    CONNECT         shift and go to state 54
     EXP             reduce using rule 33 (factor -> VARIABLE .)
     TIMES           reduce using rule 33 (factor -> VARIABLE .)
     DIV             reduce using rule 33 (factor -> VARIABLE .)
@@ -1014,6 +1064,7 @@ state 38
     MINUS           reduce using rule 33 (factor -> VARIABLE .)
     $end            reduce using rule 33 (factor -> VARIABLE .)
     CLOSE_CURLY     reduce using rule 33 (factor -> VARIABLE .)
+    LBRACK          shift and go to state 46
     LPAREN          shift and go to state 25
 
 
@@ -1064,8 +1115,8 @@ state 42
     (44) function_call -> VARIABLE LPAREN params . RPAREN
     (45) params -> params . COMMA expression
 
-    RPAREN          shift and go to state 54
-    COMMA           shift and go to state 55
+    RPAREN          shift and go to state 55
+    COMMA           shift and go to state 56
 
 
 state 43
@@ -1116,42 +1167,89 @@ state 45
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    expression                     shift and go to state 56
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    expression                     shift and go to state 57
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
 state 46
 
+    (41) index -> VARIABLE LBRACK . expression RBRACK
+    (21) expression -> . expression PLUS term
+    (22) expression -> . expression MINUS term
+    (23) expression -> . term
+    (24) expression -> . string
+    (26) expression -> . NONE
+    (27) term -> . exponent
+    (28) term -> . term TIMES exponent
+    (29) term -> . term DIV exponent
+    (25) string -> . STRING
+    (30) exponent -> . factor
+    (31) exponent -> . factor EXP factor
+    (3) factor -> . index
+    (32) factor -> . NUMBER
+    (33) factor -> . VARIABLE
+    (34) factor -> . LPAREN expression RPAREN
+    (35) factor -> . list
+    (36) factor -> . list_empty
+    (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
+    (38) list -> . LBRACK list_elements RBRACK
+    (37) list_empty -> . LBRACK RBRACK
+    (43) function_call -> . VARIABLE LPAREN RPAREN
+    (44) function_call -> . VARIABLE LPAREN params RPAREN
+
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
+    NUMBER          shift and go to state 17
+    VARIABLE        shift and go to state 29
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
+
+    expression                     shift and go to state 58
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
+    list                           shift and go to state 18
+    list_empty                     shift and go to state 19
+    function_call                  shift and go to state 20
+
+state 47
+
     (6) conditional -> IF LPAREN comparison . RPAREN OPEN_CURLY statements CLOSE_CURLY
     (7) conditional -> IF LPAREN comparison . RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY
 
-    RPAREN          shift and go to state 57
+    RPAREN          shift and go to state 59
 
 
-state 47
+state 48
 
     (11) comparison -> expression . GREATER expression
     (12) comparison -> expression . LESS expression
@@ -1162,17 +1260,17 @@ state 47
     (21) expression -> expression . PLUS term
     (22) expression -> expression . MINUS term
 
-    GREATER         shift and go to state 58
-    LESS            shift and go to state 59
-    GREATER_EQUAL   shift and go to state 60
-    LESS_EQUAL      shift and go to state 61
-    EQUAL_EQUAL     shift and go to state 62
-    NOT_EQUAL       shift and go to state 63
+    GREATER         shift and go to state 60
+    LESS            shift and go to state 61
+    GREATER_EQUAL   shift and go to state 62
+    LESS_EQUAL      shift and go to state 63
+    EQUAL_EQUAL     shift and go to state 64
+    NOT_EQUAL       shift and go to state 65
     PLUS            shift and go to state 21
     MINUS           shift and go to state 22
 
 
-state 48
+state 49
 
     (34) factor -> LPAREN expression RPAREN .
 
@@ -1194,7 +1292,7 @@ state 48
     NOT_EQUAL       reduce using rule 34 (factor -> LPAREN expression RPAREN .)
 
 
-state 49
+state 50
 
     (28) term -> term TIMES exponent .
 
@@ -1215,7 +1313,7 @@ state 49
     NOT_EQUAL       reduce using rule 28 (term -> term TIMES exponent .)
 
 
-state 50
+state 51
 
     (29) term -> term DIV exponent .
 
@@ -1236,7 +1334,7 @@ state 50
     NOT_EQUAL       reduce using rule 29 (term -> term DIV exponent .)
 
 
-state 51
+state 52
 
     (31) exponent -> factor EXP factor .
 
@@ -1257,29 +1355,34 @@ state 51
     NOT_EQUAL       reduce using rule 31 (exponent -> factor EXP factor .)
 
 
-state 52
+state 53
 
     (8) assignment -> VARIABLE LBRACK expression RBRACK . EQUAL expression
     (41) index -> VARIABLE LBRACK expression RBRACK .
 
-    EQUAL           shift and go to state 64
+    EQUAL           shift and go to state 66
+    EXP             reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    TIMES           reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    DIV             reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    PLUS            reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    MINUS           reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
     $end            reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
     CLOSE_CURLY     reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
 
 
-state 53
+state 54
 
     (17) flow -> VARIABLE CONNECT . flow_functions
     (18) flow_functions -> . flow_function_call CONNECT flow_functions
     (19) flow_functions -> . flow_function_call
     (20) flow_function_call -> . VARIABLE LPAREN params RPAREN
 
-    VARIABLE        shift and go to state 65
+    VARIABLE        shift and go to state 67
 
-    flow_functions                 shift and go to state 66
-    flow_function_call             shift and go to state 67
+    flow_functions                 shift and go to state 68
+    flow_function_call             shift and go to state 69
 
-state 54
+state 55
 
     (44) function_call -> VARIABLE LPAREN params RPAREN .
 
@@ -1301,7 +1404,7 @@ state 54
     NOT_EQUAL       reduce using rule 44 (function_call -> VARIABLE LPAREN params RPAREN .)
 
 
-state 55
+state 56
 
     (45) params -> params COMMA . expression
     (21) expression -> . expression PLUS term
@@ -1315,34 +1418,37 @@ state 55
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    expression                     shift and go to state 68
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    expression                     shift and go to state 70
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 56
+state 57
 
     (39) list_elements -> list_elements COMMA expression .
     (21) expression -> expression . PLUS term
@@ -1354,15 +1460,26 @@ state 56
     MINUS           shift and go to state 22
 
 
-state 57
+state 58
+
+    (41) index -> VARIABLE LBRACK expression . RBRACK
+    (21) expression -> expression . PLUS term
+    (22) expression -> expression . MINUS term
+
+    RBRACK          shift and go to state 71
+    PLUS            shift and go to state 21
+    MINUS           shift and go to state 22
+
+
+state 59
 
     (6) conditional -> IF LPAREN comparison RPAREN . OPEN_CURLY statements CLOSE_CURLY
     (7) conditional -> IF LPAREN comparison RPAREN . OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY
 
-    OPEN_CURLY      shift and go to state 69
+    OPEN_CURLY      shift and go to state 72
 
 
-state 58
+state 60
 
     (11) comparison -> expression GREATER . expression
     (21) expression -> . expression PLUS term
@@ -1376,34 +1493,37 @@ state 58
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    expression                     shift and go to state 70
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    expression                     shift and go to state 73
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 59
+state 61
 
     (12) comparison -> expression LESS . expression
     (21) expression -> . expression PLUS term
@@ -1417,34 +1537,37 @@ state 59
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    expression                     shift and go to state 71
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    expression                     shift and go to state 74
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 60
+state 62
 
     (13) comparison -> expression GREATER_EQUAL . expression
     (21) expression -> . expression PLUS term
@@ -1458,34 +1581,37 @@ state 60
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    expression                     shift and go to state 72
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    expression                     shift and go to state 75
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 61
+state 63
 
     (14) comparison -> expression LESS_EQUAL . expression
     (21) expression -> . expression PLUS term
@@ -1499,34 +1625,37 @@ state 61
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    expression                     shift and go to state 73
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    expression                     shift and go to state 76
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 62
+state 64
 
     (15) comparison -> expression EQUAL_EQUAL . expression
     (21) expression -> . expression PLUS term
@@ -1540,34 +1669,37 @@ state 62
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    expression                     shift and go to state 74
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    expression                     shift and go to state 77
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 63
+state 65
 
     (16) comparison -> expression NOT_EQUAL . expression
     (21) expression -> . expression PLUS term
@@ -1581,34 +1713,37 @@ state 63
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    expression                     shift and go to state 75
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    expression                     shift and go to state 78
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 64
+state 66
 
     (8) assignment -> VARIABLE LBRACK expression RBRACK EQUAL . expression
     (21) expression -> . expression PLUS term
@@ -1622,41 +1757,44 @@ state 64
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    expression                     shift and go to state 76
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    expression                     shift and go to state 79
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 65
+state 67
 
     (20) flow_function_call -> VARIABLE . LPAREN params RPAREN
 
-    LPAREN          shift and go to state 77
+    LPAREN          shift and go to state 80
 
 
-state 66
+state 68
 
     (17) flow -> VARIABLE CONNECT flow_functions .
 
@@ -1664,17 +1802,17 @@ state 66
     CLOSE_CURLY     reduce using rule 17 (flow -> VARIABLE CONNECT flow_functions .)
 
 
-state 67
+state 69
 
     (18) flow_functions -> flow_function_call . CONNECT flow_functions
     (19) flow_functions -> flow_function_call .
 
-    CONNECT         shift and go to state 78
+    CONNECT         shift and go to state 81
     $end            reduce using rule 19 (flow_functions -> flow_function_call .)
     CLOSE_CURLY     reduce using rule 19 (flow_functions -> flow_function_call .)
 
 
-state 68
+state 70
 
     (45) params -> params COMMA expression .
     (21) expression -> expression . PLUS term
@@ -1686,19 +1824,39 @@ state 68
     MINUS           shift and go to state 22
 
 
-state 69
+state 71
+
+    (41) index -> VARIABLE LBRACK expression RBRACK .
+
+    EXP             reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    TIMES           reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    DIV             reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    PLUS            reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    MINUS           reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    RBRACK          reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    COMMA           reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    RPAREN          reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    $end            reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    CLOSE_CURLY     reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    GREATER         reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    LESS            reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    GREATER_EQUAL   reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    LESS_EQUAL      reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    EQUAL_EQUAL     reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+    NOT_EQUAL       reduce using rule 41 (index -> VARIABLE LBRACK expression RBRACK .)
+
+
+state 72
 
     (6) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY . statements CLOSE_CURLY
     (7) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY . statements CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY
     (1) statements -> . statement
     (2) statement -> . assignment
-    (3) statement -> . index
     (4) statement -> . conditional
     (5) statement -> . expression
     (8) assignment -> . VARIABLE LBRACK expression RBRACK EQUAL expression
     (9) assignment -> . VARIABLE EQUAL expression
     (10) assignment -> . VARIABLE EQUAL flow
-    (41) index -> . VARIABLE LBRACK expression RBRACK
     (6) conditional -> . IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY
     (7) conditional -> . IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY
     (21) expression -> . expression PLUS term
@@ -1712,40 +1870,42 @@ state 69
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    VARIABLE        shift and go to state 7
-    IF              shift and go to state 9
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    VARIABLE        shift and go to state 6
+    IF              shift and go to state 8
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    statements                     shift and go to state 79
+    statements                     shift and go to state 82
     statement                      shift and go to state 2
     assignment                     shift and go to state 3
-    index                          shift and go to state 4
-    conditional                    shift and go to state 5
-    expression                     shift and go to state 6
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    conditional                    shift and go to state 4
+    expression                     shift and go to state 5
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 70
+state 73
 
     (11) comparison -> expression GREATER expression .
     (21) expression -> expression . PLUS term
@@ -1756,7 +1916,7 @@ state 70
     MINUS           shift and go to state 22
 
 
-state 71
+state 74
 
     (12) comparison -> expression LESS expression .
     (21) expression -> expression . PLUS term
@@ -1767,7 +1927,7 @@ state 71
     MINUS           shift and go to state 22
 
 
-state 72
+state 75
 
     (13) comparison -> expression GREATER_EQUAL expression .
     (21) expression -> expression . PLUS term
@@ -1778,7 +1938,7 @@ state 72
     MINUS           shift and go to state 22
 
 
-state 73
+state 76
 
     (14) comparison -> expression LESS_EQUAL expression .
     (21) expression -> expression . PLUS term
@@ -1789,7 +1949,7 @@ state 73
     MINUS           shift and go to state 22
 
 
-state 74
+state 77
 
     (15) comparison -> expression EQUAL_EQUAL expression .
     (21) expression -> expression . PLUS term
@@ -1800,7 +1960,7 @@ state 74
     MINUS           shift and go to state 22
 
 
-state 75
+state 78
 
     (16) comparison -> expression NOT_EQUAL expression .
     (21) expression -> expression . PLUS term
@@ -1811,7 +1971,7 @@ state 75
     MINUS           shift and go to state 22
 
 
-state 76
+state 79
 
     (8) assignment -> VARIABLE LBRACK expression RBRACK EQUAL expression .
     (21) expression -> expression . PLUS term
@@ -1823,7 +1983,7 @@ state 76
     MINUS           shift and go to state 22
 
 
-state 77
+state 80
 
     (20) flow_function_call -> VARIABLE LPAREN . params RPAREN
     (45) params -> . params COMMA expression
@@ -1839,64 +1999,67 @@ state 77
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
     VARIABLE        shift and go to state 29
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    params                         shift and go to state 80
+    params                         shift and go to state 83
     expression                     shift and go to state 43
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 78
+state 81
 
     (18) flow_functions -> flow_function_call CONNECT . flow_functions
     (18) flow_functions -> . flow_function_call CONNECT flow_functions
     (19) flow_functions -> . flow_function_call
     (20) flow_function_call -> . VARIABLE LPAREN params RPAREN
 
-    VARIABLE        shift and go to state 65
+    VARIABLE        shift and go to state 67
 
-    flow_function_call             shift and go to state 67
-    flow_functions                 shift and go to state 81
+    flow_function_call             shift and go to state 69
+    flow_functions                 shift and go to state 84
 
-state 79
+state 82
 
     (6) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements . CLOSE_CURLY
     (7) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements . CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY
 
-    CLOSE_CURLY     shift and go to state 82
+    CLOSE_CURLY     shift and go to state 85
 
 
-state 80
+state 83
 
     (20) flow_function_call -> VARIABLE LPAREN params . RPAREN
     (45) params -> params . COMMA expression
 
-    RPAREN          shift and go to state 83
-    COMMA           shift and go to state 55
+    RPAREN          shift and go to state 86
+    COMMA           shift and go to state 56
 
 
-state 81
+state 84
 
     (18) flow_functions -> flow_function_call CONNECT flow_functions .
 
@@ -1904,17 +2067,17 @@ state 81
     CLOSE_CURLY     reduce using rule 18 (flow_functions -> flow_function_call CONNECT flow_functions .)
 
 
-state 82
+state 85
 
     (6) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY .
     (7) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY . ELSE OPEN_CURLY statements CLOSE_CURLY
 
     $end            reduce using rule 6 (conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY .)
     CLOSE_CURLY     reduce using rule 6 (conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY .)
-    ELSE            shift and go to state 84
+    ELSE            shift and go to state 87
 
 
-state 83
+state 86
 
     (20) flow_function_call -> VARIABLE LPAREN params RPAREN .
 
@@ -1923,25 +2086,23 @@ state 83
     CLOSE_CURLY     reduce using rule 20 (flow_function_call -> VARIABLE LPAREN params RPAREN .)
 
 
-state 84
+state 87
 
     (7) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE . OPEN_CURLY statements CLOSE_CURLY
 
-    OPEN_CURLY      shift and go to state 85
+    OPEN_CURLY      shift and go to state 88
 
 
-state 85
+state 88
 
     (7) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY . statements CLOSE_CURLY
     (1) statements -> . statement
     (2) statement -> . assignment
-    (3) statement -> . index
     (4) statement -> . conditional
     (5) statement -> . expression
     (8) assignment -> . VARIABLE LBRACK expression RBRACK EQUAL expression
     (9) assignment -> . VARIABLE EQUAL expression
     (10) assignment -> . VARIABLE EQUAL flow
-    (41) index -> . VARIABLE LBRACK expression RBRACK
     (6) conditional -> . IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY
     (7) conditional -> . IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY
     (21) expression -> . expression PLUS term
@@ -1955,47 +2116,49 @@ state 85
     (25) string -> . STRING
     (30) exponent -> . factor
     (31) exponent -> . factor EXP factor
+    (3) factor -> . index
     (32) factor -> . NUMBER
     (33) factor -> . VARIABLE
     (34) factor -> . LPAREN expression RPAREN
     (35) factor -> . list
     (36) factor -> . list_empty
     (42) factor -> . function_call
+    (41) index -> . VARIABLE LBRACK expression RBRACK
     (38) list -> . LBRACK list_elements RBRACK
     (37) list_empty -> . LBRACK RBRACK
     (43) function_call -> . VARIABLE LPAREN RPAREN
     (44) function_call -> . VARIABLE LPAREN params RPAREN
 
-    VARIABLE        shift and go to state 7
-    IF              shift and go to state 9
-    NONE            shift and go to state 13
-    STRING          shift and go to state 15
+    VARIABLE        shift and go to state 6
+    IF              shift and go to state 8
+    NONE            shift and go to state 12
+    STRING          shift and go to state 14
     NUMBER          shift and go to state 17
-    LPAREN          shift and go to state 10
-    LBRACK          shift and go to state 8
+    LPAREN          shift and go to state 9
+    LBRACK          shift and go to state 7
 
-    statements                     shift and go to state 86
+    statements                     shift and go to state 89
     statement                      shift and go to state 2
     assignment                     shift and go to state 3
-    index                          shift and go to state 4
-    conditional                    shift and go to state 5
-    expression                     shift and go to state 6
-    term                           shift and go to state 11
-    string                         shift and go to state 12
-    exponent                       shift and go to state 14
-    factor                         shift and go to state 16
+    conditional                    shift and go to state 4
+    expression                     shift and go to state 5
+    term                           shift and go to state 10
+    string                         shift and go to state 11
+    exponent                       shift and go to state 13
+    factor                         shift and go to state 15
+    index                          shift and go to state 16
     list                           shift and go to state 18
     list_empty                     shift and go to state 19
     function_call                  shift and go to state 20
 
-state 86
+state 89
 
     (7) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY statements . CLOSE_CURLY
 
-    CLOSE_CURLY     shift and go to state 87
+    CLOSE_CURLY     shift and go to state 90
 
 
-state 87
+state 90
 
     (7) conditional -> IF LPAREN comparison RPAREN OPEN_CURLY statements CLOSE_CURLY ELSE OPEN_CURLY statements CLOSE_CURLY .
 
