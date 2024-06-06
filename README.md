@@ -266,3 +266,5 @@ if len(self.command_queue) < 1:
 ```
 
 ## Videos
+
+Miguel Arriaga - https://drive.google.com/file/d/1cnnBTBdejgjoS7GDgGbluXl2uG7QZ75t/view?usp=sharing 
