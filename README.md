@@ -47,6 +47,7 @@ In file mode (this will parse the file and print the results)
 ```bash
 python main.py -m f -f <file_path>
 ```
+
 ### Implemented Features
 
 We implemented the following features for the language:
@@ -56,8 +57,6 @@ We implemented the following features for the language:
 - Accept lists
 - Automated tests. Use of a TESTING framework to test all the features of your grammar.
 - Implement conditionals
-
-
 
 ### Testing
 
@@ -227,6 +226,7 @@ a[0]=0
 
 b=[]
 ![a=[0]](/trees/testing_cache/test/arrays/arr.txt_3.png)
+
 ### Flow
 
 This is the brand new feature that we added to the language. This is a way to chain functions together. This is done by the rules defined in the functions section.
@@ -267,8 +267,8 @@ if len(self.command_queue) < 1:
 
 ## Videos
 
-Miguel Arriaga - https://drive.google.com/file/d/1cnnBTBdejgjoS7GDgGbluXl2uG7QZ75t/view?usp=sharing 
-
+Miguel Arriaga - https://drive.google.com/file/d/1cnnBTBdejgjoS7GDgGbluXl2uG7QZ75t/view?usp=sharing
+Pablo Rocha - https://drive.google.com/file/d/16BXlkxtQyPJR4E8ntuWDfzHtd2s7NDMq/view?usp=sharing
 
 ## Referencias
 
