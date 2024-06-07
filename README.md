@@ -277,7 +277,7 @@ if len(self.command_queue) < 1:
 
 Miguel Arriaga - https://drive.google.com/file/d/1cnnBTBdejgjoS7GDgGbluXl2uG7QZ75t/view?usp=sharing
 Pablo Rocha - https://drive.google.com/file/d/16BXlkxtQyPJR4E8ntuWDfzHtd2s7NDMq/view?usp=sharing
-
+Iván Díaz - https://drive.google.com/file/d/1iiRA36WDXosu0eLiYtBaKlRg0M1Cem5m/view?usp=sharing
 ## Referencias
 
 - Fegade, Pratik (2021) "Cortex: A Compiler for Recursive Deep Learning Models". Recuperado desde: https://proceedings.mlsys.org/paper_files/paper/2021/file/eca986d585a03890a412587a2f5ccb43-Paper.pdf
